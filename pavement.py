@@ -785,9 +785,12 @@ def test_integration(options):
     success = False
     try:
         if name == 'geonode.tests.csw':
-            call_task('sync', options={'settings': settings})
-            call_task('start', options={'settings': settings})
-            call_task('setup_data', options={'settings': settings})
+            if django.VERSION[0] == 1 and django.VERSION[1] >= 11 and django.VERSION[2] >= 2:
+                pass
+            else:
+                call_task('sync', options={'settings': settings})
+                call_task('start', options={'settings': settings})
+                call_task('setup_data', options={'settings': settings})
 
         settings = 'DJANGO_SETTINGS_MODULE=%s' % settings if settings else ''
 
@@ -800,11 +803,14 @@ def test_integration(options):
             sh("%s python -W ignore manage.py loaddata geonode/base/fixtures/initial_data.json" %
                settings)
             call_task('start_geoserver')
-            bind = options.get('bind', '0.0.0.0:8000')
-            foreground = '' if options.get('foreground', False) else '&'
-            sh('%s python -W ignore manage.py runmessaging %s' % (settings, foreground))
-            sh('%s python -W ignore manage.py runserver %s %s' %
-               (settings, bind, foreground))
+            if django.VERSION[0] == 1 and django.VERSION[1] >= 11 and django.VERSION[2] >= 2:
+                pass
+            else:
+                bind = options.get('bind', '0.0.0.0:8000')
+                foreground = '' if options.get('foreground', False) else '&'
+                sh('%s python -W ignore manage.py runmessaging %s' % (settings, foreground))
+                sh('%s python -W ignore manage.py runserver %s %s' %
+                   (settings, bind, foreground))
             sh('sleep 30')
             settings = 'REUSE_DB=1 %s' % settings
 
